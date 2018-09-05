@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 Save ด้วยชื่อ `mpi-hello.c` และ Compile ด้วยคำสั่ง
 
 ```
-gcc mpi-hello.c -o hello
+gcc mpi-hello.c -o hello -lmpi
 ```
 
 Run โปรแกรมด้วยคำสั่ง
@@ -105,9 +105,13 @@ MPI_Comm_rank(
 คำสั่งของ MPI ที่ใช้ในการสื่อสารระหว่างโปรเซส แบ่งเป็น 2 ชนิด ได้แก่
 
 1. Point-to-Point Communication - เป็นการสื่อสารแบบรับส่งข้อมูลระหว่าง 2 โปรเซส มีโปรเซสหนึ่งเป็นผู้ส่ง และอีกโปรเซสหนึ่งเป็นผู้รับ
-2. Collective Communication - เป็นการ
+2. Collective Communication - เป็นการสื่อสารที่ถูกเรียกโดยโปรเซสทั้งหมดใน Communicator 
 
 ## MPI_Send and MPI_Recv
+
+* MPI_Send และ MPI_Recv เป็นฟังก์ชันสำหรับการสื่อสารแบบ Point-to-Point 
+* MPI_Send เป็นฟังก์ชันสำหรับส่งข้อมูลจากโปรเซสหนึ่งไปยังอีกโปรเซสหนึ่ง
+* MPI_Recv เป็นฟังก์ชันสำหรับรับข้อมูลที่ถูกส่งมา
 
 ```C
 MPI_Send(
@@ -130,7 +134,9 @@ MPI_Recv(
     MPI_Status* status)
 ```
 
-MPI_Datatype คือชนิดของข้อมูลของ MPI ที่ใช้ส่งและรับ เช่น MPI_CHAR, MPI_INT, MPI_FLOAT เป็นต้น ชนิดข้อมูลอื่นๆ สามารถอ้างอิงที่จาก[ที่นี่](https://msdn.microsoft.com/en-us/library/dn473290%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
+* MPI_Datatype คือชนิดของข้อมูลของ MPI ที่ใช้ส่งและรับ เช่น MPI_CHAR, MPI_INT, MPI_FLOAT เป็นต้น ชนิดข้อมูลอื่นๆ สามารถอ้างอิงที่จาก[ที่นี่](https://msdn.microsoft.com/en-us/library/dn473290%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
+
+โปรแกรมต่อไปนี้เป็นการส่งข้อมูลจากโปรเซส 0 ไปยังโปรเซส 1
 
 ```C
 #include <stdio.h>
@@ -159,10 +165,11 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
+gcc send-recv.c -o send-recv -lmpi
 mpirun -np 2 ./send-recv
 ```
 
-ส่งจาก 0 ไปทุกตัว
+โปรแกรมต่อไปนี้เป็นการส่งข้อมูลจากโปรเซส 0 ไปยังโปรเซสอื่นทั้งหมด
 
 ```C
 #include <stdio.h>
@@ -194,7 +201,15 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+```
+gcc send-recv2.c -o send-recv2 -lmpi
+mpirun -np 8 ./send-recv2
+```
+
 ## MPI_Bcast
+
+* MPI_Bcast เป็นฟังก์ชันสำหรับกระจายข้อมูลจากโปรเซสหนึ่งไปยังโปรเซสที่เหลือทั้งหมด เป็น Collective Communication ชนิดหนึ่ง
+* ต้องกำหนด root ที่เป็นโปรเซสเริ่มต้นที่จะส่งข้อมูลไปยังโปรเซสอื่น
 
 ```C
 MPI_Bcast(
@@ -204,6 +219,8 @@ MPI_Bcast(
     int root,
     MPI_Comm communicator)
 ```
+
+โปรแกรมต่อไปนี้ทำงานเหมือนกับ `send-recv2` แต่ใช้ฟังก์ชัน MPI_Bcast ในการประจายข้อมูล
 
 ```C
 #include <stdio.h>
@@ -233,7 +250,14 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+```
+gcc bcast.c -o bcast -lmpi
+mpirun -np 4 ./bcast
+```
+
 ## MPI_Reduce
+
+* MPI_Reduce เป็นฟังก์ชันสำหรับรวมข้อมูลของทุกโปรเซสมายังโปรเซส root เป็น Collective Communication ชนิดหนึ่งเช่นกัน
 
 ```C
 MPI_Reduce(
@@ -246,7 +270,9 @@ MPI_Reduce(
     MPI_Comm communicator)
 ```
 
-MPI_Op ที่เป็นไปได้ เช่น MPI_SUM, MPI_MAX, MPI_LAND [ที่นี่](https://msdn.microsoft.com/en-us/library/dn473436%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
+* MPI_Op คือ Operator สำหรับการ Reduce ข้อมูล MPI_Op ที่เป็นไปได้ เช่น MPI_SUM, MPI_MAX, MPI_LAND ชนิด Operator อื่นๆ สามารถอ้างอิงที่จาก [ที่นี่](https://msdn.microsoft.com/en-us/library/dn473436%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
+
+โปรแกรมต่อไปนี้ทำการหาค่าผลรวมของค่าในตัวแปร a ที่อยู่ในแต่ละโปรเซส และนำมาเก็บค่าไว้ในตัวแปร a ของโปรเซส 0
 
 ```C
 #include <stdio.h>
@@ -269,7 +295,16 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+```
+gcc reduce.c -o reduce -lmpi
+mpirun -np 4 ./reduce
+```
+
 ## MPI_Allreduce
+
+* MPI_Allreduce ทำงานเหมือนกับ MPI_Reduce แต่ละไม่มี root สำหรับ Reduce ข้อมูล เมื่อทำงานเสร็จ ทุกโปรเซสจะได้ค่าที่ Reduce แล้วเหมือนกันทั้งหมด
+* สามารถมองได้เหมือนกับเป็นการใช้ฟังก์ชัน MPI_Reduce และตามด้วย MPI_Bcast
+
 ```C
 MPI_Allreduce(
     void* send_data,
@@ -279,6 +314,8 @@ MPI_Allreduce(
     MPI_Op op,
     MPI_Comm communicator)
 ```
+
+โปรแกรมต่อไปนี้ทำงานเหมือนกับโปรแกรม reduce แต่ทุกโปรเซสจะได้ค่าผลรวมที่หาได้
 
 ```C
 #include <stdio.h>
@@ -301,7 +338,14 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+```
+gcc reduce2.c -o reduce2 -lmpi
+mpirun -np 4 ./reduce2
+```
+
 ## MPI_Scatter
+
+* MPI_Scatter ทำงานโดยการกระจายข้อมูลจากโปรเซส root ไปยังโปรเซสทั้งหมด แต่ไม่เหมือนกับ MPI_Bcast ตรงที่ MPI_Bcast จะส่งข้อมูลทั้งหมดไปให้กับทุกโปรเซส แต่ MPI_Scatter จะแบ่งข้อมูลเป็นส่วนๆ และส่งแต่จะส่วนให้กับแต่ละโปรเซส
 
 ```C
 MPI_Scatter(
@@ -315,34 +359,56 @@ MPI_Scatter(
     MPI_Comm communicator)
 ```
 
+โปรแกรมต่อไปนี้จะทำการหาผลรวมของ 1 ถึง 200 (สมมติให้จำนวนโปรเซสหาร 200 ลงตัว)
+
 ```C
 #include <stdio.h>
+#include <stdlib.h>
 #include <mpi.h>
 
 int main(int argc, char *argv[]) {
-  int size, rank, i, array[];
-  int root = 0;
+  int size, rank, i, numbers[200];
+  int num_per_proc, *sub_nums;
+  int root = 0, sub_sum = 0, sum = 0;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  num_per_proc = 200 / size;
+
   if (rank == root) {
-    for (i = 0; i < ; ++i) {
-      array[]
-    }
+    for (i = 0; i < 200; ++i) 
+      numbers[i] = i + 1;
   }
 
-  a = rank * 10;
-  MPI_Allreduce(&a, &a, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  printf("Value [a] of rank (%d) : %d\n", rank, a);
-  
+  sub_nums = (int*) malloc(num_per_proc * sizeof(int));
+  MPI_Scatter(numbers, num_per_proc, MPI_INT, sub_nums, num_per_proc, MPI_INT, root, MPI_COMM_WORLD);
+
+  for (i = 0; i < num_per_proc; i++)
+    sub_sum += sub_nums[i];
+
+  MPI_Reduce(&sub_sum, &sum, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
+
+  if (rank == root) {
+    printf("Summation of 1 to 200 is %d\n", sum);
+  }
+
+  free(sub_nums);
+
   MPI_Finalize();
   return 0;
 }
 ```
 
+```
+gcc sum.c -o sum -lmpi
+mpirun -np 4 ./sum
+```
+
 ## MPI_Gather
+
+* MPI_Gather ทำงานตรงกันข้ามกับ MPI_Scatter คือเป็นการรวบรวมข้อมูลทั้งหมดมาไว้ที่โปรเซส root ซึ่งต่างจาก MPI_Reduce จะมีการ Reduce ข้อมูล แต่ MPI_Gather จะนำข้อมูลแต่ละส่วนมาต่อกันเป็นชิ้นเดียว
 
 ```C
 MPI_Gather(
@@ -356,9 +422,82 @@ MPI_Gather(
     MPI_Comm communicator)
 ```
 
-```C
+ตัวอย่างโปรแกรมต่อไปนี้จะหาค่า 2 เท่าของทุกสมาชิกในอาร์เรย์ ซึ่งจะทำงานโดยการแบ่งข้อมูลในอาร์เรย์ออกเป็นส่วนๆ แและกระจายไปยังแต่ละโปรเซสด้วยฟังก์ชัน MPI_Scatter จากนั้นแต่ละโปรเซสจะนำส่วนของข้อมูลที่ตนเองถืออยู่ไปหาค่าใหม่ (ด้วยการคูณ 2) จากนั้นทุกโปรเซสจะส่งข้อมูลที่คำนวนเสร็จแล้วกลับไปยังโปรเซส root (หมายเลข 0)
 
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+  int size, rank, i, numbers[200];
+  int num_per_proc, *sub_nums;
+  int root = 0, sub_sum = 0, sum = 0;
+
+  MPI_Init(&argc, &argv);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  num_per_proc = 200 / size;
+
+  if (rank == root) {
+    for (i = 0; i < 200; ++i) 
+      numbers[i] = i + 1;
+  }
+
+  sub_nums = (int*) malloc(num_per_proc * sizeof(int));
+  MPI_Scatter(numbers, num_per_proc, MPI_INT, sub_nums, num_per_proc, MPI_INT, root, MPI_COMM_WORLD);
+
+  for (i = 0; i < num_per_proc; i++)
+    sub_nums[i] *= 2;
+
+  MPI_Gather(sub_nums, num_per_proc, MPI_INT, numbers, num_per_proc, MPI_INT, root, MPI_COMM_WORLD);
+
+  if (rank == root) {
+    for (i = 0; i < 200; i++)
+      printf("%5d");
+    printf("\n");
+  }
+
+  free(sub_nums);
+
+  MPI_Finalize();
+  return 0;
+}
 ```
+
+## MPI_Allgather
+
+* คล้ายกับ MPI_Reduce ที่มี MPI_Allreduce ฟังก์ชัน MPI_Gather ก็มีเวอร์ชันที่ข้อมูลหลังจากที่รวบรวมทั้งหมดถูกส่งไปยังทุกโปรเซส ซึ่งก็คือฟังก์ชัน MPI_Allgather
+* MPI_Allgather มีลักษณะการทำงานเหมือนกับการเรียก MPI_Gather และตามด้วย MPI_Bcast
+* ไม่จำเป็นต้องกำหนดโปรเซส root
+
+```C
+MPI_Allgather(
+    void* send_data,
+    int send_count,
+    MPI_Datatype send_datatype,
+    void* recv_data,
+    int recv_count,
+    MPI_Datatype recv_datatype,
+    MPI_Comm communicator)
+```
+
+## MPI_Scatterv and MPI_Gatherv
+
+```C
+int MPI_Scatterv(
+    void *send_data, 
+    int *send_counts, 
+    int *displs,
+    MPI_Datatype send_datatype,
+    void* recv_data,
+    int recv_count,
+    MPI_Datatype recv_datatype,
+    int root,
+    MPI_Comm communicator)
+```
+
 
 ### **Communicator**
 
