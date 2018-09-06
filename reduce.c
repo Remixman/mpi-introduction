@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   a = rank * 10;
-  MPI_Allreduce(&a, &b, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Reduce(&a, &b, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
   printf("Value [b] of rank (%d) : %d\n", rank, b);
   
   MPI_Finalize();

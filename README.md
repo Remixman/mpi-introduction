@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
     }
   } else {
     MPI_Recv(s, count, MPI_CHAR, root, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    printf("Received message in process (%d) : %s\n", rank, s);
+    printf("Received message in process (%d) : \"%s\"\n", rank, s);
   }
   
   MPI_Finalize();
@@ -243,7 +243,7 @@ int main(int argc, char *argv[]) {
   MPI_Bcast(s, 20, MPI_CHAR, root, MPI_COMM_WORLD);
 
   if (rank != root)
-    printf("Received message in process (%d) : %s\n", rank, s);
+    printf("Received message in process (%d) : \"%s\"\n", rank, s);
   
   MPI_Finalize();
   return 0;
@@ -279,7 +279,7 @@ MPI_Reduce(
 #include <mpi.h>
 
 int main(int argc, char *argv[]) {
-  int size, rank, a;
+  int size, rank, a, b;
   int root = 0;
 
   MPI_Init(&argc, &argv);
@@ -287,8 +287,8 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   a = rank * 10;
-  MPI_Reduce(&a, &a, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
-  printf("Value [a] of rank (%d) : %d\n", rank, a);
+  MPI_Reduce(&a, &b, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
+  printf("Value [b] of rank (%d) : %d\n", rank, b);
   
   MPI_Finalize();
   return 0;
@@ -322,7 +322,7 @@ MPI_Allreduce(
 #include <mpi.h>
 
 int main(int argc, char *argv[]) {
-  int size, rank, a;
+  int size, rank, a, b;
   int root = 0;
 
   MPI_Init(&argc, &argv);
@@ -330,8 +330,8 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   a = rank * 10;
-  MPI_Allreduce(&a, &a, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  printf("Value [a] of rank (%d) : %d\n", rank, a);
+  MPI_Allreduce(&a, &b, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  printf("Value [b] of rank (%d) : %d\n", rank, b);
   
   MPI_Finalize();
   return 0;
@@ -390,9 +390,8 @@ int main(int argc, char *argv[]) {
 
   MPI_Reduce(&sub_sum, &sum, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
 
-  if (rank == root) {
+  if (rank == root)
     printf("Summation of 1 to 200 is %d\n", sum);
-  }
 
   free(sub_nums);
 
@@ -454,9 +453,10 @@ int main(int argc, char *argv[]) {
   MPI_Gather(sub_nums, num_per_proc, MPI_INT, numbers, num_per_proc, MPI_INT, root, MPI_COMM_WORLD);
 
   if (rank == root) {
-    for (i = 0; i < 200; i++)
-      printf("%5d");
-    printf("\n");
+    for (i = 0; i < 200; i++) {
+      printf("%5d", numbers[i]);
+      if (i % 10 == 9) printf("\n");
+    }
   }
 
   free(sub_nums);

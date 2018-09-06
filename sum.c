@@ -26,9 +26,8 @@ int main(int argc, char *argv[]) {
 
   MPI_Reduce(&sub_sum, &sum, 1, MPI_INT, MPI_SUM, root, MPI_COMM_WORLD);
 
-  if (rank == root) {
+  if (rank == root)
     printf("Summation of 1 to 200 is %d\n", sum);
-  }
 
   free(sub_nums);
 

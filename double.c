@@ -27,9 +27,10 @@ int main(int argc, char *argv[]) {
   MPI_Gather(sub_nums, num_per_proc, MPI_INT, numbers, num_per_proc, MPI_INT, root, MPI_COMM_WORLD);
 
   if (rank == root) {
-    for (i = 0; i < 200; i++)
-      printf("%5d");
-    printf("\n");
+    for (i = 0; i < 200; i++) {
+      printf("%5d", numbers[i]);
+      if (i % 10 == 9) printf("\n");
+    }
   }
 
   free(sub_nums);
