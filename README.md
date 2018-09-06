@@ -466,6 +466,11 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+```
+gcc double.c -o double -lmpi
+mpirun -np 4 ./double
+```
+
 ## MPI_Allgather
 
 * คล้ายกับ MPI_Reduce ที่มี MPI_Allreduce ฟังก์ชัน MPI_Gather ก็มีเวอร์ชันที่ข้อมูลหลังจากที่รวบรวมทั้งหมดถูกส่งไปยังทุกโปรเซส ซึ่งก็คือฟังก์ชัน MPI_Allgather
@@ -485,6 +490,12 @@ MPI_Allgather(
 
 ## MPI_Scatterv and MPI_Gatherv
 
+* MPI_Scatter จะถือว่าทุกโปรเซสจะต้องรับข้อมูลในขนาดเท่ากันเสมอ (ตัวแปร send_count) แต่ในโปรแกรมจริงไม่จำเป็นที่เราจะต้องส่งข้อมูลในเท่ากันทุกโปรเซส
+* เช่น ในตัวอย่างของ MPI_Scatter ถ้าหากขนาดของอาร์เรย์หารด้วยจำนวนโปรเซสไม่ลงตัว แต่ละโปรเซสก็ควรจะได้รับจำนวนข้อมูลไม่เท่ากัน ซึ่งเราอาจจะแก้ปัญหาด้วยการ
+  1. เพิ่มขนาดอาร์เรย์ให้เป็นจำนวนเท่าของโปรเซส แล้วข้ามการทำงานในส่วนที่เกินจาก้อมูลจริงออกมา
+  2. ใช้ MPI_Scatterv ที่สามารถกำหนดขนาดที่แต่ละโปรเซสจะได้รับได้ (send_counts)
+* ตัวแปรอาร์เรย์ displs ที่เพิ่มขึ้นมา เป็นตัวบอกตำแหน่งเริ่มต้นของข้อมูลใน send_data ที่จะส่งให้แต่ละโปรเซส
+
 ```C
 int MPI_Scatterv(
     void *send_data, 
@@ -498,6 +509,22 @@ int MPI_Scatterv(
     MPI_Comm communicator)
 ```
 
+* เช่นเดียวกันกับ MPI_Gether ที่ข้อมูลที่ส่งมาจากแต่ละโปรเซสไม่จำเป็นที่จะต้องมีขนาดเท่ากันเสมอไป ซึ่งการใช้ฟังก์ชัน MPI_Gatherv แทนจะช่วยให้เราสามารถกำหนดขนาดข้อมูลที่จะรวบรวมมาของแต่ละโปรเซสได้
+
+```C
+int MPI_Gatherv(
+    void* send_data, 
+    int send_count, 
+    MPI_Datatype send_datatype,
+    void *recv_data, 
+    const int *recv_counts, 
+    const int *displs,
+    MPI_Datatype recv_datatype, 
+    int root, 
+    MPI_Comm communicator)
+```
+
+## Miscellaneous
 
 ### **Communicator**
 
