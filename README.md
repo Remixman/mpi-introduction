@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 Save ด้วยชื่อ `mpi-hello.c` และ Compile ด้วยคำสั่ง
 
 ```
-gcc mpi-hello.c -o hello -lmpi
+mpicc mpi-hello.c -o hello
 ```
 
 Run โปรแกรมด้วยคำสั่ง
@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc send-recv.c -o send-recv -lmpi
+mpicc send-recv.c -o send-recv
 mpirun -np 2 ./send-recv
 ```
 
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc send-recv2.c -o send-recv2 -lmpi
+mpicc send-recv2.c -o send-recv2
 mpirun -np 8 ./send-recv2
 ```
 
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc bcast.c -o bcast -lmpi
+mpicc bcast.c -o bcast
 mpirun -np 4 ./bcast
 ```
 
@@ -296,7 +296,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc reduce.c -o reduce -lmpi
+mpicc reduce.c -o reduce
 mpirun -np 4 ./reduce
 ```
 
@@ -339,7 +339,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc reduce2.c -o reduce2 -lmpi
+mpicc reduce2.c -o reduce2
 mpirun -np 4 ./reduce2
 ```
 
@@ -401,7 +401,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc sum.c -o sum -lmpi
+mpicc sum.c -o sum
 mpirun -np 4 ./sum
 ```
 
@@ -467,7 +467,7 @@ int main(int argc, char *argv[]) {
 ```
 
 ```
-gcc double.c -o double -lmpi
+mpicc double.c -o double
 mpirun -np 4 ./double
 ```
 
